@@ -18,6 +18,7 @@ class SudokuBoard:
     validate_elements_matrix(initial_elements)
 
     self.__elements = clone_elements_matrix(initial_elements)
+    self.__initial_elements = clone_elements_matrix(initial_elements)
     self.__initial_elements_set = True
 
   def is_initial_elements_set (self) -> bool:
@@ -71,18 +72,24 @@ class SudokuBoard:
 
     print(text)
 
+  def get_elements (self) -> list[list[int]]:
+    return clone_elements_matrix(self.__elements)
+
   def get_element_at (self, x: int, y: int) -> int:
     validate_coordinates(x,y)
 
     return self.__elements[x][y]
 
-  def set_element_at (self, x: int, y: int, element):
+  def set_element_at (self, x: int, y: int, element, force_set: bool = False):
     validate_coordinates(x,y)
     validate_element(element)
 
     if element is None:
-      self.delete_element_at(x, y)
+      self.delete_element_at(x, y, force_set)
       return
+
+    if not force_set and self.__initial_elements[x][y]:
+      raise Exception(f"[{x},{y}] position is an initial element")
 
     self.__elements[x][y] = element
 
@@ -123,3 +130,13 @@ class SudokuBoard:
           return False
 
     return True
+
+  def is_board_full (self) -> bool:
+    for row in self.__elements:
+      for element in row:
+        if element is None:
+          return False
+    return True
+
+  def is_board_complete (self) -> bool:
+    return self.is_board_full() and self.is_board_valid()
